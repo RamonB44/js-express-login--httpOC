@@ -26,10 +26,11 @@ app.use(
     })
 );
 
-const connection = require("./config/config.js");
+const connection = require("./app/db.js");
 
 /* drop and resync tables *********************/
-if (process.env.NODE_ENV !== 'production') {
+
+if (process.env.NODE_ENV != "production") {
     connection.sequelize.sync({ force: true }).then(() => {
         console.log("Drop and re-sync db.");
     });
@@ -44,14 +45,15 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 
-
 // simple route
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to express.js application." });
 });
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.APP_PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
+
+require("./routes/routes")(app);

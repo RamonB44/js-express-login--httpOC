@@ -1,6 +1,6 @@
 const Role = require('./role.model');
 const { Model } = require('sequelize');
-
+const bcrypt = require('bcryptjs');
 class User extends Model { }
 
 module.exports = (sequelize, Sequelize) => {
@@ -21,8 +21,8 @@ module.exports = (sequelize, Sequelize) => {
             set(value) {
                 // Storing passwords in plaintext in the database is terrible.
                 // Hashing the value with an appropriate cryptographic hash function is better.
-                this.setDataValue('password', hash(value));
-            }
+                this.setDataValue('password', bcrypt.hashSync(value, 8));
+            },
         }
     }, { sequelize, paranoid: true, modelName: 'user' });
 

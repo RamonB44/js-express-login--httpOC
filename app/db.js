@@ -8,18 +8,16 @@ require('dotenv').config();
 
 const env_name = process.env.NODE_ENV || 'development';
 //Load the configuration from the config.js
-const config = require("../db.config")[env_name]; // ${__dirname}
+const dbConfig = require("../config/config.js")[env_name]; // ${__dirname}
 
 // const log = config.log();
 
 //const getLogger = (serviceName, serviceVersion, level) => buyan.createLogger({ name: `${serviceName}:${serviceVersion}:${level}` });
 
-let dbConfig = config[process.env.DB_CONNECTION];
-
 const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
     host: dbConfig.host,
     dialect: dbConfig.dialect,
-    operatorsAliases: false,
+    operatorsAliases: 0,
     pool: {
         max: dbConfig.pool.max,
         min: dbConfig.pool.min,
@@ -39,14 +37,14 @@ const db = {};
 
 /* Load Models */
 fs
-    .readdirSync(`${__dirname}\\postgres\\`)
+    .readdirSync(`${__dirname}\\models\\postgres\\`)
     .filter(file =>
         (file.indexOf('.') !== 0) &&
         (file !== basename) &&
         (file.slice(-3) === '.js'))
     .forEach(file => {
         //console.log(file)
-        const model = require(`${__dirname}\\postgres\\${file}`)(sequelize, Sequelize);
+        const model = require(`${__dirname}\\models\\postgres\\${file}`)(sequelize, Sequelize);
         //console.log(model);
         db[model.name] = model;
     });
@@ -57,7 +55,8 @@ Object.keys(db).forEach(modelName => {
     }
 });
 /* Set relationships */
-db['user'].belongsTo(db['role'], { as: 'role' });
+//db['user'].belongsTo(db['role'], { as: 'role' });
+db.user.belongsToMany(db.role, { through : 'users_roles' });
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
