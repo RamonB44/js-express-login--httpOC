@@ -2,37 +2,28 @@ const db = require("../../../db.js");
 const User = db.user;
 const Role = db.role;
 
-checkDuplicateUsernameOrEmail = (req, res, next) => {
+checkDuplicateUsernameOrEmail = async (req, res, next) => {
     // Username
-    User.findOne({
-        username: req.body.username
-    }).exec((err, user) => {
-        if (err) {
-            res.status(500).send({ message: err });
-            return;
+    console.log(res.body);
+    await User.findOne({
+        where: {
+            email: req.body.email
         }
-
+    }
+    ).then(function (user) {
         if (user) {
             res.status(400).send({ message: "Failed! Username is already in use!" });
             return;
         }
 
-        // Email
-        User.findOne({
-            email: req.body.email
-        }).exec((err, user) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
+        next();
 
-            if (user) {
-                res.status(400).send({ message: "Failed! Email is already in use!" });
-                return;
-            }
+    }).catch(function (err) {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
 
-            next();
-        });
     });
 };
 

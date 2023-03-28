@@ -29,12 +29,12 @@ module.exports = {
         "dialect": "mysql"
     },
     "production": {
-        "username": process.env.DB_USERNAME,
-        "password": process.env.DB_PASSWORD,
-        "database": process.env.DB_DATABASE || 'JWTDatabase_MYSQL',
-        "host": process.env.DB_HOST || 'localhost',
-        "port": process.env.DB_PORT,
-        "dialect": "postgres",
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_DATABASE || 'JWTDatabase_MYSQL',
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        port: process.env.DB_PORT,
+        dialect: 'postgres',
         pool: {
             max: 5,
             min: 0,

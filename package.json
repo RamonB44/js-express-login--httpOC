@@ -4,6 +4,8 @@
   "description": "express jwt login + mongodb + angular14",
   "main": "server.js",
   "scripts": {
+    "prod" : "export NODE_ENV=production && node start",
+    "dev" : "export NODE_ENV=development && node start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "sequelize:database:migrate": "sequelize --options-path ./.sequelizerc --env database db:migrate",
     "sequelize:database:migrate:undo": "sequelize --options-path ./.sequelizerc --env database db:migrate:undo",
