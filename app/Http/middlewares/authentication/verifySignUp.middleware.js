@@ -2,17 +2,17 @@ const db = require("../../../db.js");
 const User = db.user;
 const Role = db.role;
 
-checkDuplicateUsernameOrEmail = async (req, res, next) => {
+checkDuplicateUsernameOrEmail = (req, res, next) => {
     // Username
-    console.log(res.body);
-    await User.findOne({
+    // console.log(req.body.email);
+    User.findOne({
         where: {
             email: req.body.email
         }
     }
     ).then(function (user) {
         if (user) {
-            res.status(400).send({ message: "Failed! Username is already in use!" });
+            res.status(400).send({ message: "Failed! Email is already in use!" });
             return;
         }
 

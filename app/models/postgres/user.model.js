@@ -13,10 +13,7 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
         },
         password: {
-            type: Sequelize.STRING,
-            validate: {
-                is: /^[0-9a-f]{64}$/i
-            },
+            type: Sequelize.STRING(64),
             set(value) {
                 // Storing passwords in plaintext in the database is terrible.
                 // Hashing the value with an appropriate cryptographic hash function is better.
