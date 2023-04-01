@@ -7,7 +7,7 @@ const app = express();
 require('dotenv').config();
 
 var corsOptions = {
-    origin: "http://localhost:4200"
+    origin: ["http://localhost:4200", "http://localhost"]
 };
 
 app.use(cors(corsOptions));
@@ -27,6 +27,8 @@ app.use(
 );
 
 const connection = require("./app/db.js");
+
+const ArduinoReader = require("./app/Arduino/core.js")
 
 /* drop and resync tables *********************/
 
@@ -54,8 +56,19 @@ require("./routes/routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.APP_PORT || 8080;
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
 
+// Read the port data
+ArduinoReader.on("open", () => {
+    console.log('serial port open');
+});
+
+// ArduinoReader.on('ready', () => {
+ArduinoReader.on('data', data => {
+    console.log('humedad:', data.toString('utf8'));
+});
+// });
 

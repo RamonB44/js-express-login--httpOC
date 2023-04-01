@@ -1,13 +1,16 @@
-const SerialPort = require('serialport');
-const Readline = require('@serialport/parser-readline');
-const port = new SerialPort('/dev/ttyACM0', { baudRate: 9600 });
-const parser = port.pipe(new Readline({ delimiter: '\n' }));
+const { SerialPort } = require('serialport')
 
-// Read the port data
-port.on("open", () => {
-    console.log('serial port open');
-});
+const port = new SerialPort({ path: 'COM3', baudRate: 115200 }, function (err) {
+    if (err) {
+        return console.log('Error: ', err.message)
+    }
+})
 
-parser.on('data', data => {
-    console.log('got word from arduino:', data);
-});
+const { ReadyParser } = require('@serialport/parser-ready')
+
+const { InterByteTimeoutParser } = require('@serialport/parser-inter-byte-timeout')
+
+// const parser = port.pipe(new ReadyParser({ delimiter: '\n' }))
+const parser = port.pipe(new InterByteTimeoutParser({ interval: 30 }))
+
+module.exports = parser;
