@@ -75,7 +75,7 @@ exports.signin = async (req, res) => {
       authorities.push("ROLE_" + user.roles[i].roleName.toUpperCase());
     }
 
-    req.session.token = token;
+    //req.session.token = token;
 
     res.status(200).send({
       id: user._id,

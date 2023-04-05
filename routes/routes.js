@@ -3,6 +3,6 @@ const Test = require("./test/web.test")
 
 module.exports = function (app) {
     Auth(app),
-    Test(app)
+    Test(app) // comentar cuando se termine la depuracion
 }
 

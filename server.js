@@ -1,14 +1,39 @@
 const express = require("express");
 const cors = require("cors");
-const cookieSession = require("cookie-session");
+const connection = require("./app/db.js");
+const ArduinoReader = require("./app/arduino.js")
+const { Server: SocketIoServer } = require('socket.io');
+const { createAdapter } = require("@socket.io/redis-adapter");
 
 const app = express();
 
-require('dotenv').config();
+const http = require("http").Server(app)
 
-var corsOptions = {
-    origin: ["http://localhost:4200", "http://localhost"]
+const corsOptions = {
+    origin: ["http://localhost:4200", "http://localhost:3000", "http://localhost:3001"],
 };
+
+const io = new SocketIoServer(http, {
+    cors: corsOptions,
+    methods: ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ['Access-Control-Allow-Headers', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin']
+});
+
+/* Create a new Socket Connection */
+const pubClient = require("./app/redis.js");
+const subClient = pubClient.duplicate();
+
+io.adapter(createAdapter(pubClient, subClient));
+io.listen(3001);
+
+io.engine.on("connection_error", (err) => {
+    console.log(err.req);      // the request object
+    console.log(err.code);     // the error code, for example 1
+    console.log(err.message);  // the error message, for example "Session ID unknown"
+    console.log(err.context);  // some additional error context
+});
+
+require('dotenv').config();
 
 app.use(cors(corsOptions));
 
@@ -18,20 +43,19 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
+app.set("socketio", io);
+
+app.set("arduino", ArduinoReader);
+
+/*app.use(
     cookieSession({
         name: "expressjs-cookie-session",
         secret: process.env.COOKIE_SECRET, // should use as secret environment variable
         httpOnly: true
     })
-);
+);*/
 
-const connection = require("./app/db.js");
-
-const ArduinoReader = require("./app/Arduino/core.js")
-
-/* drop and resync tables *********************/
-
+/* Drop and resync tables */
 if (process.env.NODE_ENV != "production") {
     connection.sequelize.sync({ force: true }).then(() => {
         console.log("Drop and re-sync db.");
@@ -46,29 +70,13 @@ if (process.env.NODE_ENV != "production") {
         });
 }
 
-
-// simple route
-app.get("/", (req, res) => {
-    res.json({ message: "Welcome to express.js application." });
-});
-
-require("./routes/routes")(app);
-
 // set port, listen for requests
 const PORT = process.env.APP_PORT || 8080;
 
-app.listen(PORT, () => {
+http.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
 
-// Read the port data
-ArduinoReader.on("open", () => {
-    console.log('serial port open');
-});
-
-// ArduinoReader.on('ready', () => {
-ArduinoReader.on('data', data => {
-    console.log('humedad:', data.toString('utf8'));
-});
-// });
+/* Declare routes */
+require("./routes/routes")(app);
 

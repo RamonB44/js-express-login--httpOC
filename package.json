@@ -29,7 +29,9 @@
   },
   "homepage": "https://github.com/SabioEmperador/js-express-login--httpOC#readme",
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.1.0",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
     "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -37,10 +39,16 @@
     "jsonwebtoken": "^9.0.0",
     "pg": "^8.10.0",
     "pg-hstore": "^2.3.4",
+    "redis": "^4.6.5",
     "sequelize": "^6.29.3",
-    "serialport": "^10.5.0"
+    "serialport": "^10.5.0",
+    "socket.io": "^4.6.1"
   },
   "devDependencies": {
     "sequelize-cli": "^6.6.0"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.7",
+    "utf-8-validate": "^5.0.10"
   }
 }

@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 
 const pjs = require('../package.json');
