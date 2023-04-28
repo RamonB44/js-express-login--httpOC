@@ -1,11 +1,17 @@
-const { authJwt } = require("../../app/Http/middlewares/auth.middleware");
+const { authJwt, socketAuthJwt } = require("../../app/Http/middlewares/auth.middleware");
 const controller = require("../../test/test.controller");
 
 module.exports = function (app) {
   const io = app.get("socketio");
 
-  io.on("connection", (socket) => {
+  // io.engine.use(async (req, res, next) => {
+  //   console.log(req.body)
+  // });
 
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth.token;
+    await socketAuthJwt.checkToken(token)
+    next();
   });
 
   app.use(function (req, res, next) {
@@ -13,20 +19,9 @@ module.exports = function (app) {
       "Access-Control-Allow-Headers",
       "Origin, Content-Type, Accept"
     );
-
+    // validad token http
     next();
   });
-
-  // /* Cuando el cliente envie una peticion al socket esta pasara por este metodo. Esto se aplica solo a las rutas en esta Hoja*/
-  // io.engine.use((req, res, next) => {
-  //   res.setHeader(
-  //     "Access-Control-Allow-Headers",
-  //     "Origin, Content-Type, Accept"
-  //   );
-  //   // console.log(res.body);
-  //   // authJwt.verifyCookieToken(req, res, next);
-  //   next();
-  // });
 
   app.get("/api/test/all", controller.allAccess);
 

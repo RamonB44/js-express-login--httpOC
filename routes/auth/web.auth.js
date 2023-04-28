@@ -23,4 +23,6 @@ module.exports = function (app) {
     app.post("/api/auth/login", controller.signin);
 
     app.post("/api/auth/logout", controller.signout);
+    // invalida los tokens anteriores y genera uno nuevo
+    app.post("/api/auth/refreshToken", controller.refreshToken);
 };

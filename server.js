@@ -16,15 +16,12 @@ const corsOptions = {
 const io = new SocketIoServer(http, {
     cors: corsOptions,
     methods: ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ['Access-Control-Allow-Headers', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin']
+    allowedHeaders: ['Access-Control-Allow-Headers', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin'],
+    credentials: true,
+    pingInterval: 5000,
+    allowUpgrades: true,
+    // pingTimeout: 60000 // 2 minutos y 30 segundos
 });
-
-/* Create a new Socket Connection */
-const pubClient = require("./app/redis.js");
-const subClient = pubClient.duplicate();
-
-io.adapter(createAdapter(pubClient, subClient));
-io.listen(3001);
 
 io.engine.on("connection_error", (err) => {
     console.log(err.req);      // the request object
@@ -32,6 +29,12 @@ io.engine.on("connection_error", (err) => {
     console.log(err.message);  // the error message, for example "Session ID unknown"
     console.log(err.context);  // some additional error context
 });
+/* Create a new Socket Connection */
+const pubClient = require("./app/redis.js");
+const subClient = pubClient.duplicate();
+
+io.adapter(createAdapter(pubClient, subClient));
+io.listen(3001);
 
 require('dotenv').config();
 

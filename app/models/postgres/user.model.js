@@ -19,6 +19,9 @@ module.exports = (sequelize, Sequelize) => {
                 // Hashing the value with an appropriate cryptographic hash function is better.
                 this.setDataValue('password', bcrypt.hashSync(value, 8));
             },
+        },
+        token : {
+            type: Sequelize.STRING(254),
         }
     }, { sequelize, paranoid: true, modelName: 'user' });
 
