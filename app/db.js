@@ -43,9 +43,9 @@ fs
         (file !== basename) &&
         (file.slice(-3) === '.js'))
     .forEach(file => {
-        //console.log(file)
+        // console.log(file)
         const model = require(`${__dirname}\\models\\postgres\\${file}`)(sequelize, Sequelize);
-        //console.log(model);
+        // console.log(model);
         db[model.name] = model;
     });
 
@@ -57,7 +57,7 @@ Object.keys(db).forEach(modelName => {
 });
 /* Set relationships */
 //db['user'].belongsTo(db['role'], { as: 'role' });
-db.user.belongsToMany(db.role, { through : 'users_roles' });
+db.user.belongsToMany(db.role, { through: 'users_roles' });
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;

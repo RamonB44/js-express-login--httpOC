@@ -12,11 +12,18 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
-    return await queryInterface.bulkInsert('user', [{
-      username: 'LordHunter',
-      email: 'admin@admin.com',
-      password: '#Newgame1ramon',
-      role_id: 1,
+    return await queryInterface.bulkInsert('roles', [{
+      roleName: 'Administrador',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      roleName: 'Moderador',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      roleName: 'Usuario',
       createdAt: new Date(),
       updatedAt: new Date()
     }]);
@@ -29,6 +36,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    return await queryInterface.bulkDelete('user', null, {});
+    return await queryInterface.bulkDelete('role', null, {});
   }
 };

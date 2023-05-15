@@ -3,7 +3,7 @@ require('dotenv').config();
 const pjs = require('../package.json');
 const { name, version } = pjs;
 
-module.exports = {
+const config = {
     name,
     version,
     development: {
@@ -20,14 +20,14 @@ module.exports = {
             idle: 10000
         },
     },
-    "test": {
+    test: {
         "username": "root",
         "password": null,
         "database": "database_test",
         "host": "127.0.0.1",
         "dialect": "mysql"
     },
-    "production": {
+    production: {
         host: process.env.DB_HOST || 'localhost',
         database: process.env.DB_DATABASE || 'JWTDatabase_MYSQL',
         username: process.env.DB_USERNAME,
@@ -41,4 +41,6 @@ module.exports = {
             idle: 10000
         },
     }
-};
+}
+
+module.exports = config;

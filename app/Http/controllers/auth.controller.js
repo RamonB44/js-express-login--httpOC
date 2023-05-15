@@ -154,7 +154,6 @@ exports.refreshToken = async (req, res) => {
         expiresIn: "1m", // 1 minutos
       });
 
-
       // console.log(newToken)
       res.status(200).send({
         id: user._id,
