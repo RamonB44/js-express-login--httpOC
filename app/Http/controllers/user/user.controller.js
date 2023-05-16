@@ -1,10 +1,19 @@
+const sequelize = require('sequelize');
 const db = require("../../../db.js");
+const Op = sequelize.Op;
 const User = db.user;
 
 async function getUsers(req, res) {
-    const userData = User.findAll()
+    User.findAll({
+        where: {
+            id: {
+                [Op.gt]: 1
+            },
+        },
+        attributes: { exclude: ['password', 'token', 'updatedAt', 'deletedAt'] }
+    })
         .then(users => {
-            return users; // Log the retrieved data
+            return res.status(200).send(users);// Log the retrieved data
             // Handle the data as needed
         })
         .catch(error => {
@@ -12,9 +21,8 @@ async function getUsers(req, res) {
             // Handle the error as needed
             return res.status(500).send(error);
         });
-    return res.status(200).send(userData);
 }
 
-module.exports = (req, res) => {
-    getUsers(req, res)
+module.exports = {
+    getUsers
 }

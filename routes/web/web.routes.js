@@ -2,7 +2,7 @@ const { authJwt, socketAuthJwt } = require("../../app/Http/middlewares/auth.midd
 const User = require("./user/user.routes");
 const Roles = require("./roles/roles.routes")
 
-module.exports = (app) => {
+module.exports = async (app) => {
     User(app),
     Roles(app)
 }
