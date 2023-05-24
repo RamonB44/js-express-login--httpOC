@@ -124,7 +124,7 @@ exports.signout = async (req, res) => {
       return res.status(200).send({ message: "You've been signed out!" });
     }).catch( (err) => {
       return res.status(401).send({
-        message: "Error"
+        message: "Error",
       });
     })
     
