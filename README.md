@@ -10,6 +10,8 @@ npm i -save
 
 npm install -g sequelize-cli
 
+npm i dotenv
+
 luego 
 
 export NODE_ENV=development

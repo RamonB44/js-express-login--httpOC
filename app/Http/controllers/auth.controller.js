@@ -6,169 +6,217 @@ const Role = db.role;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
+/**
+ * Sign up a new user, create their account and generate access and refresh tokens.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent.
+ */
 exports.signup = async (req, res) => {
+  try {
+    // Find the "Guest" role in the database
+    const role = await Role.findOne({ where: { roleName: "Guest" } });
 
-  const role = await Role.findOne({ where: { roleName: "Guest" } });
+    // Create a new user
+    const user = await User.create({
+      username: req.body.fullName,
+      email: req.body.email,
+      password: req.body.password
+    });
 
-  await User.create({
-    username: req.body.fullName,
-    email: req.body.email,
-    password: req.body.password,
-  }).then((user) => {
     if (user) {
+      // Assign the "Guest" role to the user
       user.addRole(role);
 
-      var token = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
-        expiresIn: "1m", // 1 minuto
-      });
-  
-      var refresh_token = jwt.sign({ id: user.id }, config.REFRESH_TOKEN_PRIVATE_KEY, {
-        expiresIn: "30d", // 30 dias
+      // Generate access token
+      const access_token = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
+        expiresIn: "1m" // Expires in 1 minute
       });
 
-      var authorities = [];
-      // console.log(role.roleName);
-      // for (let i = 0; i < user.roles.length; i++) {
-      authorities.push("ROLE_" + role.roleName.toUpperCase());
-      // }
-      user.token = refresh_token;
-      user.save();
-      
-      res.send({
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        roles: authorities,
-        token: {
-            access_token: token, // access token 1 min expiration
-            refresh_token: refresh_token // refresh token 1h expiration
-        }
+      // Generate refresh token
+      const refresh_token = jwt.sign({ id: user.id }, config.REFRESH_TOKEN_PRIVATE_KEY, {
+        expiresIn: "30d" // Expires in 30 days
       });
+
+      const authorities = ["ROLE_" + role.roleName.toUpperCase()];
+
+      // Set cookie options
+      const access_token_opt = { maxAge: 1000 * 60 * 60 * 24, httpOnly: true };
+      const refresh_token_opt = { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true };
+
+      // Update the user's token in the database
+      user.token = refresh_token;
+      await user.save();
+
+      // Send the response with cookies
+      res
+        .cookie("access_token", access_token, access_token_opt)
+        .cookie("refresh_token", refresh_token, refresh_token_opt)
+        .send({
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          roles: authorities
+        });
     }
-  }).catch((err) => {
+  } catch (err) {
+    // Handle error
     if (err) {
       res.status(500).send({ message: err.message });
-      return;
     }
   }
-  );
-}
+};
 
+/**
+ * Sign in the user and generate access and refresh tokens.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent.
+ */
 exports.signin = async (req, res) => {
-  await User.findOne({
-    where: {
-      email: req.body.email
-    },
-    include: Role
-  }).then(function (user) {
-    // retrieve user
+  try {
+    // Find the user in the database
+    const user = await User.findOne({
+      where: {
+        email: req.body.email
+      },
+      include: Role
+    });
+
     if (!user) {
+      // User not found
       return res.status(404).send({ message: "User Not found." });
     }
 
-    var passwordIsValid = bcrypt.compareSync(
-      req.body.password,
-      user.password
-    );
+    // Validate the password
+    const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
 
     if (!passwordIsValid) {
+      // Invalid password
       return res.status(401).send({ message: "Invalid Password!" });
     }
 
-    var token = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
-      expiresIn: "1m", // 1 minuto
+    // Generate access token
+    const access_token = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
+      expiresIn: "1m" // Expires in 1 minute
     });
 
-    var refresh_token = jwt.sign({ id: user.id }, config.REFRESH_TOKEN_PRIVATE_KEY, {
-      expiresIn: "30d", // 30 dias
+    // Generate refresh token
+    const refresh_token = jwt.sign({ id: user.id }, config.REFRESH_TOKEN_PRIVATE_KEY, {
+      expiresIn: "30d" // Expires in 30 days
     });
 
-    var authorities = [];
-    
-    for (let i = 0; i < user.roles.length; i++) {
-      authorities.push("ROLE_" + user.roles[i].roleName.toUpperCase());
-    }
-    // var refresh_token = "";
-    //req.session.token = token;
+    const authorities = user.roles.map(role => "ROLE_" + role.roleName.toUpperCase());
+
+    const access_token_opt = { maxAge: 1000 * 60 * 60 * 24, httpOnly: true };
+    const refresh_token_opt = { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true };
+    // Update the user's token in the database
     user.token = refresh_token;
-    user.save();
+    await user.save();
 
-    res.status(200).send({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      roles: authorities,
-      token: {
-          access_token: token, // access token 1 min expiration
-          refreshToken: refresh_token // refresh token 1h expiration
-      }
-    });
-
-  }).catch(function (err) {
-    // handle error;
-    console.log(err)
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-  });
+    // Send the response
+    res.status(200)
+      .cookie("access_token", access_token, access_token_opt)
+      .cookie("refresh_token", refresh_token, refresh_token_opt)
+      .send({
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        roles: authorities
+      });
+  } catch (err) {
+    // Handle error
+    console.log(err);
+    res.status(500).send({ message: err });
+  }
 };
 
+/**
+ * Sign out a user by invalidating their refresh token and clearing the access and refresh tokens from cookies.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent.
+ */
 exports.signout = async (req, res) => {
   try {
-    // invalida el token de las cookies
-    // req.session = null;
-    await User.findOne({ token: req.body.token.refresh_token}).then( (user) => {
+    let refresh_token = req.session.refresh_token;
+
+    // Find the user with the provided refresh token
+    const user = await User.findOne({ token: refresh_token });
+
+    if (user) {
+      // Invalidate the user's token
       user.token = null;
-      user.save();
+      await user.save();
+
+      // Clear the access and refresh tokens from cookies
+      res.clearCookie('access_token');
+      res.clearCookie('refresh_token');
+
+      // Send the response
       return res.status(200).send({ message: "You've been signed out!" });
-    }).catch( (err) => {
-      return res.status(401).send({
-        message: "Error",
-      });
-    })
-    
+    } else {
+      // User not found
+      return res.status(401).send({ message: "Error" });
+    }
   } catch (err) {
-    console.log(err)
+    console.log(err);
     if (err) {
       res.status(500).send({ message: err });
-      return;
     }
   }
 };
 
+/**
+ * Refreshes the access token.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} - The response object containing the refreshed access token and user information.
+ */
 exports.refreshToken = async (req, res) => {
-  // console.log(req.body)
-  jwt.verify(req.body.token.refreshToken, config.REFRESH_TOKEN_PRIVATE_KEY, (err, decoded) => {
-    if (err) {
-      err.data = { content: "Invalid refreshToken" };
-      res.status(401).send({
-        message: err.data.content
-      })
-    } else {
-      // const tokenPayload = jwt.decode(req.body.token.refresh_token, { json: true, complete: true });
-      // console.log(tokenPayload.payload.id)
-      const user = User.findByPk(req.body.accessTokenPayload.id);
-      // console.log(user);
-      const newToken = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
-        expiresIn: "1m", // 1 minutos
-      });
+  console.log(req.session);
+  // Retrieve the refresh token from the session
+  let refresh_token = req.session.refresh_token;
 
-      // console.log(newToken)
-      res.status(200).send({
+  // Check if a refresh token is provided
+  if (!refresh_token) {
+    return res.status(403).send({ message: "No refreshToken provided!" });
+  }
+
+  // Verify the refresh token
+  jwt.verify(refresh_token, config.REFRESH_TOKEN_PRIVATE_KEY, (err, decoded) => {
+    // Handle verification error
+    if (err) {
+      err.data = { content: "Unauthorized! Please login again..." };
+      return res.status(401).send({
+        message: err.data.content
+      });
+    }
+
+    // Find the user associated with the access token payload
+    const user = User.findByPk(req.body.accessTokenPayload.id);
+
+    // Generate a new access token
+    const newToken = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
+      expiresIn: "1m", // 1 minute
+    });
+
+    // Prepare the user's authorities
+    var authorities = [];
+    for (let i = 0; i < user.roles.length; i++) {
+      authorities.push("ROLE_" + user.roles[i].roleName.toUpperCase());
+    }
+
+    // Set the new access token as a cookie in the response
+    const access_token_opt = { maxAge: 1000 * 60 * 60 * 24, httpOnly: true };
+    res.status(200)
+      .cookie("access_token", newToken, access_token_opt)
+      .send({
         id: user._id,
         username: user.username,
         email: user.email,
-        token: {
-          access_token : newToken,
-          refreshToken: req.body.token.refreshToken
-        }
+        roles: authorities
       });
-    }
   });
-
-}
-
-exports.token = async (req, res) => {
-
 }
