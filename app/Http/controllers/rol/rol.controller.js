@@ -19,7 +19,6 @@ async function del(req, res) {
 
 }
 
-
 module.exports = {
     list,
     create,

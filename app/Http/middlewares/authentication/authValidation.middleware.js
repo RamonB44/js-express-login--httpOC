@@ -35,6 +35,13 @@ verifyCookieToken = (req, res, next) => {
     });
 };
 
+/**
+ * Refreshes the access token using the refresh token.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 refreshToken = (req, res, next) => {
     let refresh_token = req.session.refresh_token;
 
@@ -56,11 +63,16 @@ refreshToken = (req, res, next) => {
     });
 };
 
-// recopila el token de los headers
+/**
+ * Verifies the access token from the request headers.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 verifyToken = (req, res, next) => {
-    // console.log(re)
     let token = req.headers.token;
-    // console.log(token)
+
     if (!token) {
         res.status(403).send({ message: "No token provided!" });
     }
@@ -74,6 +86,13 @@ verifyToken = (req, res, next) => {
     });
 };
 
+/**
+ * Checks if the user has admin role.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 isAdmin = (req, res, next) => {
     User.findById(req.userId).exec((err, user) => {
         if (err) {
@@ -105,6 +124,13 @@ isAdmin = (req, res, next) => {
     });
 };
 
+/**
+ * Checks if the user has moderator role.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 isModerator = (req, res, next) => {
     User.findById(req.userId).exec((err, user) => {
         if (err) {
@@ -143,4 +169,5 @@ const authJwt = {
     isAdmin,
     isModerator,
 };
+
 module.exports = authJwt;

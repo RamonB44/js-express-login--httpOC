@@ -177,7 +177,7 @@ exports.signout = async (req, res) => {
  * @returns {Object} - The response object containing the refreshed access token and user information.
  */
 exports.refreshToken = async (req, res) => {
-  console.log(req.session);
+  
   // Retrieve the refresh token from the session
   let refresh_token = req.session.refresh_token;
 
@@ -197,14 +197,13 @@ exports.refreshToken = async (req, res) => {
     }
 
     // Find the user associated with the access token payload
-    // console.log(decoded);
     const user = await User.findByPk(decoded.id, { include: Role });
-    console.log(user);
+    
     // Generate a new access token
     const newToken = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
       expiresIn: "1m", // 1 minute
     });
-    // console.log(user.roles)
+    
     // Prepare the user's authorities
     const authorities = user.roles.map(role => "ROLE_" + role.roleName.toUpperCase());
     // Set the new access token as a cookie in the response

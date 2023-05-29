@@ -1,7 +1,17 @@
 const { Model } = require('sequelize');
 const bcrypt = require('bcryptjs');
+
 class User extends Model { }
 
+/**
+ * User Model
+ *
+ * Represents a user in the application.
+ *
+ * @param {object} sequelize - The Sequelize instance.
+ * @param {object} Sequelize - The Sequelize module.
+ * @returns {object} - The User model.
+ */
 module.exports = (sequelize, Sequelize) => {
     User.init({
         username: {
@@ -15,15 +25,18 @@ module.exports = (sequelize, Sequelize) => {
         password: {
             type: Sequelize.STRING(64),
             set(value) {
-                // Storing passwords in plaintext in the database is terrible.
-                // Hashing the value with an appropriate cryptographic hash function is better.
+                // Store the hashed password in the database
                 this.setDataValue('password', bcrypt.hashSync(value, 8));
             },
         },
-        token : {
+        token: {
             type: Sequelize.STRING(254),
         }
-    }, { sequelize, paranoid: true, modelName: 'user' });
+    }, {
+        sequelize,
+        paranoid: true,
+        modelName: 'user'
+    });
 
     return User;
 };

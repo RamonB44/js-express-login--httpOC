@@ -8,10 +8,17 @@ module.exports = function (app) {
             "Access-Control-Allow-Headers",
             "Origin, Content-Type, Accept"
         );
-        
+        // Allow headers for CORS
+
         next();
     });
 
+    /**
+     * @route POST /api/auth/register
+     * @description User registration
+     * @access Public
+     * @middleware verifySignUp.checkDuplicateUsernameOrEmail, verifySignUp.checkRolesExisted
+     */
     app.post(
         "/api/auth/register", [
         verifySignUp.checkDuplicateUsernameOrEmail,
@@ -20,9 +27,24 @@ module.exports = function (app) {
     ],
         controller.signup);
 
+    /**
+     * @route POST /api/auth/login
+     * @description User login
+     * @access Public
+     */
     app.post("/api/auth/login", controller.signin);
 
+    /**
+     * @route POST /api/auth/logout
+     * @description User logout
+     * @access Public
+     */
     app.post("/api/auth/logout", controller.signout);
-    // invalida los tokens anteriores y genera uno nuevo
+
+    /**
+     * @route POST /api/auth/refreshToken
+     * @description Refresh access token
+     * @access Public
+     */
     app.post("/api/auth/refreshToken", controller.refreshToken);
 };
