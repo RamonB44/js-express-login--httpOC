@@ -40,18 +40,15 @@ exports.signup = async (req, res) => {
 
       const authorities = ["ROLE_" + role.roleName.toUpperCase()];
 
-      // Set cookie options
-      const access_token_opt = { maxAge: 1000 * 60 * 60 * 24, httpOnly: true };
-      const refresh_token_opt = { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true };
-
+      // Set cookie session
+      req.session.access_token = access_token;
+      req.session.refresh_token = refresh_token;
       // Update the user's token in the database
       user.token = refresh_token;
       await user.save();
 
       // Send the response with cookies
       res
-        .cookie("access_token", access_token, access_token_opt)
-        .cookie("refresh_token", refresh_token, refresh_token_opt)
         .send({
           id: user._id,
           username: user.username,
@@ -98,7 +95,7 @@ exports.signin = async (req, res) => {
 
     // Generate access token
     const access_token = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
-      expiresIn: "1m" // Expires in 1 minute
+      expiresIn: "30m" // Expires in 1 minute
     });
 
     // Generate refresh token
@@ -108,8 +105,6 @@ exports.signin = async (req, res) => {
 
     const authorities = user.roles.map(role => "ROLE_" + role.roleName.toUpperCase());
 
-    // const access_token_opt = { maxAge: 1000 * 60 * 60 * 24, httpOnly: true };
-    // const refresh_token_opt = { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true };
     // Update the user's token in the database
     req.session.access_token = access_token;
     req.session.refresh_token = refresh_token;
@@ -118,8 +113,6 @@ exports.signin = async (req, res) => {
 
     // Send the response
     res.status(200)
-      // .cookie("access_token", access_token, access_token_opt)
-      // .cookie("refresh_token", refresh_token, refresh_token_opt)
       .send({
         id: user._id,
         username: user.username,
@@ -159,7 +152,7 @@ exports.signout = async (req, res) => {
       return res.status(200).send({ message: "You've been signed out!" });
     } else {
       // User not found
-      return res.status(401).send({ message: "Error" });
+      return res.status(401).send({ message: "User not found!" });
     }
   } catch (err) {
     console.log(err);
