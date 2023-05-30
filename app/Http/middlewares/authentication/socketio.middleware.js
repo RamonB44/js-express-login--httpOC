@@ -14,7 +14,7 @@ checkToken = async (token) => {
     jwt.verify(token, config.REFRESH_TOKEN_PRIVATE_KEY, (err, decoded) => {
         if (err) {
             err.data = { content: "Please retry later" };
-            console.log("auth", { message: "UnAuthorized" });
+            console.log("auth", { message: "Unauthorized" });
         } else {
             console.log(JSON.stringify(decoded));
             console.log("auth", { message: "Authorized", user_id: decoded.id });

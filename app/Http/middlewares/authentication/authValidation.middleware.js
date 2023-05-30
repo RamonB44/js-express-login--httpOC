@@ -41,7 +41,7 @@ verifyCookieToken = async (req, res, next) => {
             return res.status(401).send({ message: "The token has already expired. Please refresh token..." });
         }
 
-        res.status(500).send({ message: "Internal Server Error" });
+        return res.status(500).send({ message: "Internal Server Error" });
     }
 };
 
@@ -75,7 +75,11 @@ refreshToken = async (req, res, next) => {
             return res.status(401).send({ message: "Unauthorized! Please login again..." });
         }
 
-        res.status(500).send({ message: "Internal Server Error" });
+        if(error.name === "TokenExpiredError"){
+            return res.status(401).send({ message: "The token has already expired. Please login again..." });
+        }
+
+        return res.status(500).send({ message: "Internal Server Error" });
     }
 };
 
@@ -105,7 +109,11 @@ verifyToken = async (req, res, next) => {
             return res.status(401).send({ message: "Unauthorized!" });
         }
 
-        res.status(500).send({ message: "Internal Server Error" });
+        if(error.name === "TokenExpiredError"){
+            return res.status(401).send({ message: "The token has already expired. Please refresh token..." });
+        }
+
+        return res.status(500).send({ message: "Internal Server Error" });
     }
 };
 
@@ -132,7 +140,7 @@ isAdmin = async (req, res, next) => {
     } catch (error) {
         // Handle the error as needed
         console.error(error);
-        res.status(500).send({ message: "Internal Server Error" });
+        return res.status(500).send({ message: "Internal Server Error" });
     }
 };
 
@@ -156,11 +164,11 @@ isModerator = async (req, res, next) => {
             }
         }
 
-        res.status(403).send({ message: "Require Moderador Role!" });
+        return res.status(403).send({ message: "Require Moderador Role!" });
     } catch (error) {
         // Handle the error as needed
         console.error(error);
-        res.status(500).send({ message: "Internal Server Error" });
+        return res.status(500).send({ message: "Internal Server Error" });
     }
 };
 

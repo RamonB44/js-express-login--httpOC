@@ -104,7 +104,7 @@ async function del(req, res) {
 
         await role.destroy();
 
-        return res.status(200).send({ message: 'Record soft deleted successfully!' });
+        res.status(200).send({ message: 'Record soft deleted successfully!' });
     } catch (error) {
         console.error(error);
         return res.status(500).send(error);

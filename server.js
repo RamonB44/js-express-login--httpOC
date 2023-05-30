@@ -14,11 +14,11 @@ const corsOptions = {
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Access-Control-Allow-Headers', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin'],
     preflightContinue: true,
+    credentials: true,
 };
 
 const io = new SocketIoServer(server, {
     cors: corsOptions,
-    credentials: true,
     pingInterval: 5000,
     allowUpgrades: true,
 });
