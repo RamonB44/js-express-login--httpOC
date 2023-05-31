@@ -39,7 +39,7 @@ module.exports = function (app) {
      * @description User logout
      * @access Public
      */
-    app.post("/api/auth/logout", controller.signout);
+    app.delete("/api/auth/logout", controller.signout);
 
     /**
      * @route POST /api/auth/refreshToken
@@ -47,4 +47,6 @@ module.exports = function (app) {
      * @access Public
      */
     app.post("/api/auth/refreshToken", controller.refreshToken);
+
+    // app.get("/api/auth/check-auth", controller.checkAuth);
 };

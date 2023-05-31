@@ -51,7 +51,7 @@ app.use(
             name: "refresh_token",
             secret: process.env.REFRESH_TOKEN_PRIVATE_KEY, // Secret key for refresh token cookie
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         }
     )
 );
@@ -62,7 +62,7 @@ app.use(
             name: "access_token",
             secret: process.env.ACCESS_TOKEN_PRIVATE_KEY, // Secret key for access token cookie
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+            maxAge: 1800000 // 30 minutes
         }
     )
 );

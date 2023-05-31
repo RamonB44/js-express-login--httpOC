@@ -53,7 +53,10 @@ exports.signup = async (req, res) => {
           id: user._id,
           username: user.username,
           email: user.email,
-          roles: authorities
+          roles: authorities,
+          token: {
+            access_token: access_token, // access token 1 min expiration
+          }
         });
     }
   } catch (err) {
@@ -112,12 +115,16 @@ exports.signin = async (req, res) => {
     await user.save();
 
     // Send the response
-    res.status(200)
+    res
+      .status(200)
       .send({
         id: user._id,
         username: user.username,
         email: user.email,
-        roles: authorities
+        roles: authorities,
+        token: {
+          access_token: access_token, // access token 1 min expiration
+        }
       });
   } catch (err) {
     // Handle error
@@ -170,7 +177,7 @@ exports.signout = async (req, res) => {
  * @returns {Object} - The response object containing the refreshed access token and user information.
  */
 exports.refreshToken = async (req, res) => {
-  
+
   // Retrieve the refresh token from the session
   let refresh_token = req.session.refresh_token;
 
@@ -191,16 +198,15 @@ exports.refreshToken = async (req, res) => {
 
     // Find the user associated with the access token payload
     const user = await User.findByPk(decoded.id, { include: Role });
-    
+
     // Generate a new access token
     const newToken = jwt.sign({ id: user.id }, config.ACCESS_TOKEN_PRIVATE_KEY, {
-      expiresIn: "1m", // 1 minute
+      expiresIn: "30m", // 1 minute
     });
-    
+
     // Prepare the user's authorities
     const authorities = user.roles.map(role => "ROLE_" + role.roleName.toUpperCase());
     // Set the new access token as a cookie in the response
-    // const access_token_opt = { maxAge: 1000 * 60 * 60 * 24, httpOnly: true };
     req.session.access_token = newToken;
     req.session.refresh_token = refresh_token;
     res.status(200)
@@ -208,7 +214,10 @@ exports.refreshToken = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        roles: authorities
+        roles: authorities,
+        token: {
+          access_token: access_token, // access token 1 min expiration
+        }
       });
   });
 }
